@@ -53,19 +53,23 @@ namespace OpenAutoBench_ng.OpenAutoBench
                 case Settings.InstrumentConnectionTypeEnum.IP:
                     connection = new IPConnection(settings.InstrumentIPAddress, settings.InstrumentIPPort);
                     break;
+                case Settings.InstrumentConnectionTypeEnum.VISA:
+                    connection = new VISAConnection(settings.InstrumentVisaResourceName);
+                    break;
                 default:
                     throw new Exception("Unsupported connection type. Dying.");
             }
 
             switch (settings.InstrumentType)
             {
+                // HP 8920, 8921, and 8935 via VISA 
                 case Settings.InstrumentTypeEnum.HP_8900:
-                    if (!settings.IsGPIB)
+                    if (settings.InstrumentConnectionType != Settings.InstrumentConnectionTypeEnum.VISA)
                     {
-                        throw new Exception("GPIB disabled and HP 8900 selected. This is an impossible combination.");
+                        throw new Exception("HP 8900 selected, must use VISA connection");
                     }
-                     
-                    instrument = new HP_8900Instrument(connection, settings.InstrumentGPIBAddress);
+
+                    instrument = new HP_8900Instrument(connection);
                     await instrument.Connect();
                     await Task.Delay(500);
 
@@ -84,11 +88,11 @@ namespace OpenAutoBench_ng.OpenAutoBench
                     }
                     break;
 
-
+                // General Dynamics R2670 via serial
                 case Settings.InstrumentTypeEnum.R2670:
-                    if (settings.IsGPIB)
+                    if (settings.InstrumentConnectionType != Settings.InstrumentConnectionTypeEnum.Serial)
                     {
-                        throw new Exception("GPIB enabled and R2670 selected. GPIB is not supported on this instrument.");
+                        throw new Exception("R2670 requires serial connection.");
                     }
                     int serialPort = 0;
                     serialPort = int.Parse(Regex.Match(settings.InstrumentSerialPort, @"\d+").Value);
@@ -111,11 +115,11 @@ namespace OpenAutoBench_ng.OpenAutoBench
                     }
                     break;
 
-
+                // IFR 2975 via serial
                 case Settings.InstrumentTypeEnum.IFR_2975:
-                    if (settings.IsGPIB)
+                    if (settings.InstrumentConnectionType != Settings.InstrumentConnectionTypeEnum.Serial)
                     {
-                        throw new Exception("GPIB enabled and IFR 2975 selected. GPIB is not supported on this instrument.");
+                        throw new Exception("IFR 2975 requires serial connection.");
                     }
                     instrument = new IFR_2975Instrument(connection);
                     await instrument.Connect();
@@ -135,16 +139,11 @@ namespace OpenAutoBench_ng.OpenAutoBench
                         throw new Exception("Connection to instrument failed: " + e.ToString());
                     }
                     break;
-                case Settings.InstrumentTypeEnum.Astronics_R8000:
-                    if (settings.IsGPIB)
-                    {
-                        throw new Exception("GPIB enabled and Astronics R8000 selected. GPIB is not supported on this instrument.");
-                    }
 
-                    if (connection is SerialConnection)
-                    {
-                        throw new Exception("Serial selected and Astronics R8000 selected. Serial is not supported in this instrument.");
-                    }
+                // Astronics R8000 via IP connection
+                case Settings.InstrumentTypeEnum.Astronics_R8000:
+                    if (settings.InstrumentConnectionType != Settings.InstrumentConnectionTypeEnum.IP)
+                        throw new Exception("Astronics R8000 requires IP connection.");
 
                     instrument = new Astronics_R8000Instrument(connection);
                     await instrument.Connect();
@@ -164,16 +163,11 @@ namespace OpenAutoBench_ng.OpenAutoBench
                         throw new Exception("Connection to instrument failed: " + e.ToString());
                     }
                     break;
-                case Settings.InstrumentTypeEnum.Viavi_8800SX:
-                    if (settings.IsGPIB)
-                    {
-                        throw new Exception("GPIB enabled and Viavi 8800SX selected. GPIB is not supported on this instrument.");
-                    }
 
-                    if (connection is SerialConnection)
-                    {
-                        throw new Exception("Serial selected and Viavi 8800SX selected. Serial is not supported in this instrument.");
-                    }
+                // Viavi 8800SX via IP connection
+                case Settings.InstrumentTypeEnum.Viavi_8800SX:
+                    if (settings.InstrumentConnectionType != Settings.InstrumentConnectionTypeEnum.IP)
+                        throw new Exception("Viavi 8800SX requires IP connection.");
 
                     instrument = new Viavi_8800SXInstrument(connection);
                     await instrument.Connect();
@@ -193,6 +187,7 @@ namespace OpenAutoBench_ng.OpenAutoBench
                         throw new Exception("Connection to instrument failed: " + e.ToString());
                     }
                     break;
+
                 default:
                     // this shouldn't happen!
                     throw new Exception("Unsupported instrument somehow selected. Dying.");

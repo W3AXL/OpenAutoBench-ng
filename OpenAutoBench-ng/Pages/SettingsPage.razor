@@ -4,6 +4,7 @@
 
 @using OpenAutoBench_ng.OpenAutoBench
 @using Microsoft.Extensions.Logging
+@using OpenAutoBench_ng.Communication.Instrument.Connection;
 @inject ILogger<SettingsPage> Logger
 @inject IToastService toastService
 
@@ -27,20 +28,16 @@
         </label>
     </p>
 
+    <div hidden="@(!(settings.InstrumentConnectionType == Settings.InstrumentConnectionTypeEnum.VISA))">
     <p>
         <label>
-            Instrument connected over GPIB?:
-            <InputCheckbox @bind-Value="settings.IsGPIB">
-            </InputCheckbox>
-        </label>
-    </p>
-
-    <div hidden="@(!(settings.IsGPIB))">
-    <p>
-        <label>
-            Instrument GPIB Address:
-            <InputNumber @bind-Value="settings.InstrumentGPIBAddress">
-            </InputNumber>
+            VISA Device:
+            <InputSelect @bind-Value="settings.InstrumentVisaResourceName">
+                @foreach(var resources in VISAConnection.GetGPIBResources())
+                {
+                    <option value="@resources">@resources</option>
+                }
+            </InputSelect>
         </label>
     </p>
     </div>
