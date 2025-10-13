@@ -22,6 +22,7 @@
             Serial = 0,
             //USB = 1,
             IP = 2,
+            VISA = 3,
         }
 
         public enum SerialNewlineType
@@ -34,15 +35,9 @@
         public InstrumentConnectionTypeEnum InstrumentConnectionType { get; set; }
 
         /// <summary>
-        /// Bool to store if the instrument in question is on a GPIB bus.
-        /// Pretty much just adds some specific commands for selecting the address
+        /// Name of the NI VISA resource used for instrument connection
         /// </summary>
-        public bool IsGPIB { get; set; }
-
-        /// <summary>
-        /// The address of the instrument on the GPIB bus.
-        /// </summary>
-        public int InstrumentGPIBAddress { get; set;}
+        public string InstrumentVisaResourceName { get; set; }
 
         /// <summary>
         /// The serial port the instrument (or interface) is connected at.
@@ -88,8 +83,7 @@
             InstrumentConnectionType = InstrumentConnectionTypeEnum.Serial;
             InstrumentSerialPort = "";
             InstrumentBaudrate = 115200;
-            IsGPIB = false;
-            InstrumentGPIBAddress = 0;
+            InstrumentVisaResourceName = "";
             InstrumentIPAddress = "";
             InstrumentIPPort = 0;
             MotoTrboKeys = new int[] { 0, 0, 0, 0};

@@ -20,11 +20,14 @@ namespace OpenAutoBench_ng.Communication.Instrument.HP_8900
         public int ConfigureDelay { get { return 250; } }
 
         private int GPIBAddr;
-        public HP_8900Instrument(IInstrumentConnection conn, int addr)
+        public HP_8900Instrument(IInstrumentConnection conn)
         {
+            // Ensure this is a VISA connection
+            if (conn.GetType() != typeof(VISAConnection))
+                throw new ArgumentException("HP 8900 requires a VISA GPIB connection");
+
             Connected = false;
             Connection = conn;
-            GPIBAddr = addr;
         }
 
         private async Task<string> Send(string command)
